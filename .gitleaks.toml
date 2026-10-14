@@ -1,0 +1,19 @@
+# gitleaks (CI "Security" job): the default rules, minus the placeholder keys tests, CI and docs use.
+# These placeholders are never real secrets; real keys only ever live in .env / the hosting dashboards.
+# `[allowlist]` (not the newer `[[allowlists]]`): the gitleaks the CI action installs (8.24) only reads this form.
+title = "HireFlow"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test fixtures, CI placeholders and the specification's example values"
+paths = [
+  '''^backend/tests/''',
+  '''^(docs/)?PROJECT_SPECIFICATION\.md$''',  # it moved into docs/; history still has the old path
+]
+regexes = [
+  '''ci-secret-key-that-is-long-enough-for-hs256-signing''',
+  '''test-secret-key-that-is-long-enough-1234567890''',
+  '''e2e-secret-key-that-is-long-enough-0123456789''',  # scripts/e2e.sh: a throwaway server for the tests
+]

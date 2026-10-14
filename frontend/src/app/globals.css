@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * HireFlow design tokens: blue and white only (docs/HIREFLOW_PLAN.md §3).
+ * Light: white surfaces, deep navy text, one blue accent. Dark: deep navy with white text.
+ * Status colours are shades of blue and are always paired with an icon and a text label.
+ * The one exception is --danger, a single muted red used only for destructive actions (Delete account).
+ */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 214 100% 97%;
+    --secondary-foreground: 222 47% 20%;
+    --muted: 214 60% 97%;
+    --muted-foreground: 215 25% 40%;
+    --accent: 214 95% 93%;
+    --accent-foreground: 224 64% 33%;
+    --border: 214 32% 89%;
+    --line: 214 32% 80%;
+    --input: 214 32% 85%;
+    --ring: 221 83% 53%;
+    --radius: 0.75rem;
+    /* Status: shades of blue, always with an icon and a label */
+    --success: 224 76% 40%;
+    --success-foreground: 0 0% 100%;
+    --info: 200 89% 33%; /* plan value 199 89% 40% is 3.99:1 on white; darkened to pass WCAG AA */
+    --info-foreground: 0 0% 100%;
+    --warning: 217 33% 35%;
+    --warning-foreground: 0 0% 100%;
+    --destructive: 222 47% 20%;
+    --destructive-foreground: 0 0% 100%;
+    /* Destructive actions only (Delete account) */
+    --danger: 0 62% 42%;
+    --danger-foreground: 0 0% 100%;
+    /* Brand mark colours: the same in light and dark mode */
+    --brand: 221 83% 53%;
+    --brand-foreground: 0 0% 100%;
+    --brand-soft: 213 97% 87%;
+    /* Scrim behind dialogs and sheets (both modes) */
+    --overlay: 222 47% 5%;
+    /* Charts */
+    --series-1: #1e3a8a;
+    --series-2: #2563eb;
+    --series-3: #60a5fa;
+    --chart-grid: #e2e8f0;
+    --chart-axis: #cbd5e1;
+    --chart-muted: #64748b;
+  }
+  .dark {
+    --background: 222 47% 7%;
+    --foreground: 0 0% 100%;
+    --card: 222 44% 10%;
+    --card-foreground: 0 0% 100%;
+    --popover: 222 44% 11%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 213 94% 68%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 222 40% 16%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 222 40% 14%;
+    --muted-foreground: 214 32% 75%;
+    --accent: 222 40% 18%;
+    --accent-foreground: 0 0% 100%;
+    --border: 222 30% 22%;
+    --line: 222 30% 34%;
+    --input: 222 30% 26%;
+    --ring: 213 94% 68%;
+    --success: 213 94% 78%;
+    --success-foreground: 222 47% 11%;
+    --info: 199 89% 70%;
+    --info-foreground: 222 47% 11%;
+    --warning: 214 32% 80%;
+    --warning-foreground: 222 47% 11%;
+    --destructive: 214 32% 91%;
+    --destructive-foreground: 222 47% 11%;
+    --danger: 0 70% 70%;
+    --danger-foreground: 222 47% 11%;
+    --series-1: #bfdbfe;
+    --series-2: #60a5fa;
+    --series-3: #2563eb;
+    --chart-grid: #1e293b;
+    --chart-axis: #334155;
+    --chart-muted: #94a3b8;
+  }
+  * {
+    @apply border-border;
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  ::selection {
+    @apply bg-primary text-primary-foreground;
+  }
+}
+
+@layer components {
+  .label-caps {
+    @apply text-[11px] font-medium uppercase tracking-label;
+  }
+  .display {
+    @apply font-display font-extrabold leading-[1.05] tracking-tight;
+  }
+  /* Brush strokes behind a headline (see the landing hero). */
+  .brush {
+    position: relative;
+    isolation: isolate;
+  }
+  .brush::before,
+  .brush::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    background: hsl(var(--primary));
+    transform: skewY(-9deg) rotate(-8deg);
+  }
+  .brush::before {
+    left: -3%;
+    right: 2%;
+    top: 36%;
+    height: 24%;
+  }
+  .brush::after {
+    left: -12%;
+    right: 34%;
+    top: 84%;
+    height: 21%;
+  }
+  .tag-pill {
+    @apply inline-flex items-center rounded-full border border-foreground/70 bg-background px-4 py-1.5 text-sm text-foreground;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  .prose-pre {
+    @apply whitespace-pre-wrap break-words text-sm leading-relaxed;
+  }
+  .grid-lines {
+    /* 1px separators between grid cells: give the grid a line-colored background and gap-px */
+    @apply gap-px overflow-hidden rounded-xl bg-border;
+  }
+  .grid-lines > * {
+    @apply bg-card;
+  }
+}
