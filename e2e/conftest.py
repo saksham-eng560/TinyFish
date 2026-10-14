@@ -7,6 +7,7 @@ from collections.abc import Iterator
 
 import pytest
 from playwright.sync_api import Browser, Page, sync_playwright
+from playwright.sync_api import TimeoutError as PlaywrightTimeout
 
 BASE = os.environ.get("E2E_BASE_URL", "http://localhost:3000").rstrip("/")
 
@@ -47,3 +48,13 @@ def open_demo_account(page: Page) -> None:
     assert response.ok, response.text()
     page.goto(f"{BASE}/dashboard")
     page.wait_for_url("**/dashboard", timeout=60_000)
+
+
+def settle(page: Page, timeout: int = 10_000) -> None:
+    """Wait for the page to load and its data requests to quiet down. Pages that poll (scan status, the submit queue)
+    may never go fully idle on a slow CI runner, so the idle wait is best-effort: callers check for real content."""
+    page.wait_for_load_state("load")
+    try:
+        page.wait_for_load_state("networkidle", timeout=timeout)
+    except PlaywrightTimeout:
+        pass

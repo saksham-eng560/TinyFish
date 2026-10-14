@@ -6,7 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from conftest import BASE, open_demo_account
+from conftest import BASE, open_demo_account, settle
 from playwright.sync_api import Browser, Page
 
 AXE = Path(__file__).resolve().parents[1] / "frontend" / "node_modules" / "axe-core" / "axe.min.js"
@@ -35,7 +35,7 @@ def test_no_serious_accessibility_problems(browser: Browser, theme: str) -> None
     assert page.evaluate("document.documentElement.classList.contains('dark')") is (theme == "dark")
     for path in DASHBOARD:
         page.goto(f"{BASE}{path}")
-        page.wait_for_load_state("networkidle")
+        settle(page)
         found[path] = _scan(page)
     context.close()
     problems = {path: issues for path, issues in found.items() if issues}

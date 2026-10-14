@@ -12,7 +12,7 @@ from __future__ import annotations
 import time
 import uuid
 
-from conftest import BASE, open_demo_account
+from conftest import BASE, open_demo_account, settle
 from playwright.sync_api import Page, expect
 
 
@@ -45,7 +45,8 @@ def test_sign_up_onboard_scan_swipe_and_fill(page: Page) -> None:
     assert kept.value.ok, kept.value.text()
     deadline = time.monotonic() + 150
     while True:
-        page.goto(f"{BASE}/dashboard/submit", wait_until="networkidle")
+        page.goto(f"{BASE}/dashboard/submit")
+        settle(page)
         if page.get_by_role("button", name="Submit application").count():
             break
         assert time.monotonic() < deadline, "the kept job never reached Ready to submit"

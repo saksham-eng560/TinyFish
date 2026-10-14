@@ -7,6 +7,7 @@ import http.server
 import json
 import threading
 from collections.abc import Iterator
+from datetime import date, timedelta
 from email.parser import BytesParser
 from email.policy import default as email_policy
 from pathlib import Path
@@ -76,7 +77,7 @@ class MockSite:
                         "@context": "https://schema.org", "@type": "JobPosting", "title": "Software Engineer",
                         "description": "<p>Backend engineer with Python, FastAPI, PostgreSQL, Docker and Kubernetes. "
                                        "2+ years of experience. We build developer tools for millions of users.</p>",
-                        "datePosted": "2026-09-25", "employmentType": "FULL_TIME",
+                        "datePosted": (date.today() - timedelta(days=2)).isoformat(),  # always fresh "employmentType": "FULL_TIME",
                         "hiringOrganization": {"@type": "Organization", "name": "Acme Robotics"},
                         "jobLocation": {"@type": "Place", "address": {"addressLocality": "San Francisco", "addressRegion": "CA"}},
                         "url": f"{base}/jobs/1", "directApplyUrl": f"{base}/jobs/1/apply",
