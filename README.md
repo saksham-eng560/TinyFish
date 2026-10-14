@@ -17,6 +17,7 @@
   <a href="#quick-start">Quick start</a> ·
   <a href="#demo-steps">Demo</a> ·
   <a href="#safety">Safety</a> ·
+  <a href="#research-foundations">Research</a> ·
   <a href="docs/TINYFISH.md">TinyFish docs</a> ·
   <a href="docs/SUBMISSION.md">Submission</a>
 </p>
@@ -111,6 +112,63 @@ The Finder runs the same pipeline as a scan. The full picture, with the data flo
   source works as before.
 - **Light and dark themes:** orange and black, with every text pair checked to WCAG AA (4.5:1) by
   `scripts/check_contrast.py`.
+
+## Research foundations
+
+HireFlow × TinyFish is an engineering project, not a research paper, but its design follows published work on web
+agents, information retrieval, person-job matching, record linkage and LLM safety. The table says what each paper
+contributed and **where the idea shows up in this code**. These are design influences: HireFlow does not reimplement
+the models in these papers (no neural person-job fit model is trained here, for example).
+
+### 1. Web agents: reading and acting on live websites
+
+| Paper | Idea we use | Where in HireFlow |
+|---|---|---|
+| Yao et al., **ReAct: Synergizing Reasoning and Acting in Language Models**, ICLR 2023. [arXiv:2210.03629](https://arxiv.org/abs/2210.03629) | Interleave a reasoning step with an action, observe, repeat | The TinyFish Agent's step loop; its `PROGRESS` events (one per step) stream into the Finder as live status ([`scrapers/tinyfish.py`](backend/app/scrapers/tinyfish.py)) |
+| Nakano et al., **WebGPT: Browser-assisted question-answering with human feedback**, 2021. [arXiv:2112.09332](https://arxiv.org/abs/2112.09332) | Search first, then read the pages you found, instead of answering from memory | The Search, then Fetch, pipeline: every listing comes from a page read live (`ttl=0`), never from hardcoded data |
+| Zhou et al., **WebArena: A Realistic Web Environment for Building Autonomous Agents**, ICLR 2024. [arXiv:2307.13854](https://arxiv.org/abs/2307.13854) | Real websites are hard for agents: long tasks, dynamic pages, low success rates | Why the Agent is a **targeted fallback** with a step budget and a time cap, not the default path |
+| Deng et al., **Mind2Web: Towards a Generalist Agent for the Web**, NeurIPS 2023. [arXiv:2306.06070](https://arxiv.org/abs/2306.06070) | Agents must generalise across unseen sites and domains | One goal template and schema for any careers site, with no per-site scripts ([`build_agent_goal`](backend/app/scrapers/tinyfish_parse.py)) |
+| He et al., **WebVoyager: Building an End-to-End Web Agent with Large Multimodal Models**, ACL 2024. [arXiv:2401.13919](https://arxiv.org/abs/2401.13919) | End-to-end agents on live, JavaScript-heavy sites | Pages that Fetch reports as `bot_blocked`, `login_required` or a JavaScript shell are escalated to the Agent |
+| Zheng et al., **GPT-4V(ision) is a Generalist Web Agent, if Grounded** (SeeAct), ICML 2024. [arXiv:2401.01614](https://arxiv.org/abs/2401.01614) | Grounding actions in the real page is the hard part | Every URL the Agent returns is checked (https only, same site or a known ATS) before it becomes a listing ([`agent_jobs_to_scraped`](backend/app/scrapers/tinyfish_parse.py)) |
+| Yao et al., **WebShop: Towards Scalable Real-World Web Interaction with Grounded Language Agents**, NeurIPS 2022. [arXiv:2207.01206](https://arxiv.org/abs/2207.01206) | Turn a user's stated preferences into search and selection on the web | Role, location, seniority and visa needs become Search queries and Agent goals |
+| Schick et al., **Toolformer: Language Models Can Teach Themselves to Use Tools**, NeurIPS 2023. [arXiv:2302.04761](https://arxiv.org/abs/2302.04761) | Call an external tool only when it adds something | Each TinyFish endpoint runs only when the previous stage needs it, so none of the three is padding |
+
+### 2. Structured extraction from web pages
+
+| Paper | Idea we use | Where in HireFlow |
+|---|---|---|
+| Ferrara et al., **Web Data Extraction, Applications and Techniques: A Survey**, Knowledge-Based Systems 2014. [arXiv:1207.0246](https://arxiv.org/abs/1207.0246) | Prefer the page's own structured data, fall back to layout heuristics | `parse_posting_html` reads schema.org `JobPosting` JSON-LD first, then the `h1` and `main` text |
+| Willard and Louf, **Efficient Guided Generation for Large Language Models**, 2023. [arXiv:2307.09702](https://arxiv.org/abs/2307.09702) | Constrain model output to a schema so it can be parsed reliably | The Agent always runs with `output_schema` (`JOBS_OUTPUT_SCHEMA`), and each field is validated afterwards |
+| Zhang et al., **SkillSpan: Hard and Soft Skill Extraction from English Job Postings**, NAACL 2022. [arXiv:2204.12811](https://arxiv.org/abs/2204.12811) | Skills are spans inside the posting text | Keyword and skill hits in the description feed the ranker's 15-point keyword factor and the "skills you have / they want" chips |
+
+### 3. Ranking and matching
+
+| Paper | Idea we use | Where in HireFlow |
+|---|---|---|
+| Robertson and Zaragoza, **The Probabilistic Relevance Framework: BM25 and Beyond**, Foundations and Trends in IR, 2009. [doi:10.1561/1500000019](https://doi.org/10.1561/1500000019) | Score relevance from term evidence, with saturation so one repeated word can't dominate | The preference ranker caps every factor (title 35, location 20, seniority 15, keywords 15, recency 10, visa 5) ([`tinyfish_ranker.py`](backend/app/services/tinyfish_ranker.py)) |
+| Järvelin and Kekäläinen, **Cumulated Gain-Based Evaluation of IR Techniques**, ACM TOIS 2002. [doi:10.1145/582415.582418](https://doi.org/10.1145/582415.582418) | Users mostly read the top of a list, so ordering matters more than the long tail | Results are sorted best first, and a minimum-score cut drops the weak tail |
+| Zhu et al., **Person-Job Fit: Adapting the Right Talent for the Right Job with Joint Representation Learning**, ACM TMIS 2018. [arXiv:1810.04040](https://arxiv.org/abs/1810.04040) | Person-job fit compares what a job requires with what a candidate offers | Resume-based scoring: skills, experience, domain, location and pay, each shown as its own bar on the Swipe Review card ([`job_matcher.py`](backend/app/services/job_matcher.py)) |
+| Qin et al., **Enhancing Person-Job Fit for Talent Recruitment: An Ability-aware Neural Network Approach**, SIGIR 2018. [arXiv:1812.08947](https://arxiv.org/abs/1812.08947) | Explain a match through the abilities a job asks for | Every score comes with reasons ("Why this ranks", "you have / they want"), never a bare number |
+| Weinberger et al., **Feature Hashing for Large Scale Multitask Learning**, ICML 2009. [arXiv:0902.2206](https://arxiv.org/abs/0902.2206) | Hash words straight into a fixed-size vector: no vocabulary, no model download | The default local embedder (`EMBEDDING_PROVIDER=local`) used for resume-to-job cosine similarity ([`embeddings.py`](backend/app/services/embeddings.py)) |
+| Reimers and Gurevych, **Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks**, EMNLP 2019. [arXiv:1908.10084](https://arxiv.org/abs/1908.10084) | Compare texts by the cosine of their sentence embeddings | `cosine_similarity(resume, job)` orders new matches when a neural embedder is configured |
+| Nussbaum et al., **Nomic Embed: Training a Reproducible Long Context Text Embedder**, 2024. [arXiv:2402.01613](https://arxiv.org/abs/2402.01613) | An open, local embedding model | The `EMBEDDING_PROVIDER=ollama` option (`nomic-embed-text`), which runs on your own computer |
+
+### 4. De-duplication and record linkage
+
+| Paper | Idea we use | Where in HireFlow |
+|---|---|---|
+| Fellegi and Sunter, **A Theory for Record Linkage**, JASA 1969. [doi:10.1080/01621459.1969.10501049](https://doi.org/10.1080/01621459.1969.10501049) | Decide whether two records are the same entity by comparing their fields | `dedupe_key(company, title, location)` merges one job found on a board, a careers page and a search result ([`text_utils.py`](backend/app/services/text_utils.py)) |
+| Li et al., **Deep Entity Matching with Pre-Trained Language Models** (Ditto), PVLDB 2021. [arXiv:2004.00584](https://arxiv.org/abs/2004.00584) | Normalise fields before matching them | Company and title are normalised before keying, and URLs are canonicalised (tracking parameters, fragments and trailing slashes stripped) by `canonical_url` |
+| Broder, **On the Resemblance and Containment of Documents**, Compression and Complexity of Sequences 1997. [doi:10.1109/SEQUEN.1997.666900](https://doi.org/10.1109/SEQUEN.1997.666900) | Near-duplicate web documents are common and must be collapsed | Two-level dedupe (exact canonical URL, then the field key), with the richest copy kept: ATS API, then Fetch, then Agent, then snippet |
+
+### 5. Safety: untrusted pages and truthful output
+
+| Paper | Idea we use | Where in HireFlow |
+|---|---|---|
+| Greshake et al., **Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection**, AISec 2023. [arXiv:2302.12173](https://arxiv.org/abs/2302.12173) | Text on a web page can carry instructions aimed at the model reading it | Page text passes through `sanitize_untrusted` before any LLM sees it; the Agent goal forbids logins, forms and submissions; Agent output is schema-checked ([`llm.py`](backend/app/services/llm.py)) |
+| Ji et al., **Survey of Hallucination in Natural Language Generation**, ACM Computing Surveys 2023. [arXiv:2202.03629](https://arxiv.org/abs/2202.03629) | Generated text can state things the source never said | Resume tailoring is checked line by line against your real resume, so nothing is invented ([`resume_tailor.py`](backend/app/services/resume_tailor.py)) |
+| Min et al., **FActScore: Fine-grained Atomic Evaluation of Factual Precision in Long Form Text Generation**, EMNLP 2023. [arXiv:2305.14251](https://arxiv.org/abs/2305.14251) | Check generated text one atomic claim at a time | The same line-by-line check, and the Agent prompt's rule to return `null` instead of guessing a missing field |
+| Lewis et al., **Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks**, NeurIPS 2020. [arXiv:2005.11401](https://arxiv.org/abs/2005.11401) | Ground generation in retrieved documents | Cover letters and answers are written from the fetched job description and your own resume, not from the model's memory |
 
 ## Quick start
 
