@@ -95,7 +95,7 @@ def payload_to_job(p: dict[str, Any]) -> ScrapedJob:
 
 
 def listing_id(job: ScrapedJob) -> str:
-    return hashlib.sha1(canonical_url(job.source_url).encode()).hexdigest()[:16]  # noqa: S324 - an id, not security
+    return hashlib.sha1(canonical_url(job.source_url).encode(), usedforsecurity=False).hexdigest()[:16]  # an id, not security
 
 
 def to_listing(r: Ranked) -> dict[str, Any]:
