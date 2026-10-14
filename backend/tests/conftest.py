@@ -25,6 +25,7 @@ os.environ.update(
         "LLM_PROVIDER": "auto",
         "OLLAMA_MODEL": "",  # Ollama stays off unless a test configures it
         "OLLAMA_API_KEY": "",
+        "TINYFISH_API_KEY": "",  # the real .env is read by config.py: tests must never see a dev key
         "EMBEDDING_PROVIDER": "local",
         "GOOGLE_CLIENT_ID": "",
         "GOOGLE_CLIENT_SECRET": "",
@@ -47,6 +48,7 @@ from fastapi.testclient import TestClient
 from app.core.database import Base, SessionLocal, create_all, engine
 from app.services.llm import LLMClient, set_llm
 from app.services.rate_limiter import rate_limiter
+from app.services.tinyfish_client import reset_throttles as reset_tinyfish_throttles
 from app.worker.dispatch import wait_for_local_tasks
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -87,6 +89,7 @@ def _reset_state() -> Iterator[None]:
     # not change result type"), so start every test with fresh connections.
     engine.dispose()
     rate_limiter._mem.clear()
+    reset_tinyfish_throttles()
     set_llm(LLMClient(providers=[]))  # heuristic mode unless a test injects a fake provider
     yield
     set_llm(None)

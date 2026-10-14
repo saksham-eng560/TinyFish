@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: { default: "HireFlow", template: "%s · HireFlow" },
   description: SITE_DESCRIPTION,
   applicationName: "HireFlow",
-  keywords: ["internships", "job applications", "resume tailoring", "AI agent", "applicant tracking", "open source"],
+  keywords: ["internships", "job applications", "resume tailoring", "AI agent", "TinyFish", "applicant tracking", "open source"],
   openGraph: OPEN_GRAPH,
   twitter: { card: "summary_large_image", title: SITE_TITLE, description: SITE_DESCRIPTION },
   manifest: "/manifest.webmanifest",
@@ -36,7 +36,7 @@ export const viewport: Viewport = {
   themeColor: [
     // Literal colours are required here (the <meta name="theme-color"> tag); they match --background.
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#090e1a" },
+    { media: "(prefers-color-scheme: dark)", color: "#110F0E" },
   ],
 };
 

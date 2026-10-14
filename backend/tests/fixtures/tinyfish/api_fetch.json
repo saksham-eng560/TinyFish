@@ -1,0 +1,42 @@
+{
+  "results": [
+    {
+      "url": "https://acme.example/careers",
+      "final_url": "https://acme.example/careers",
+      "title": "Careers at Acme",
+      "description": "Join us",
+      "language": "en",
+      "format": "markdown",
+      "text": "# Careers\n\n- [Backend Engineer](https://acme.example/careers/backend-engineer-1)\n- [Data Intern](https://acme.example/careers/data-intern-2)\n",
+      "author": null,
+      "published_date": null,
+      "links": [
+        "https://acme.example/careers/backend-engineer-1",
+        "https://acme.example/careers/data-intern-2"
+      ],
+      "latency_ms": 812.0
+    },
+    {
+      "url": "https://globex.example/jobs/1",
+      "final_url": "https://www.globex.example/jobs/1/",
+      "title": "Platform Engineer - Globex",
+      "format": "markdown",
+      "text": "Platform Engineer\nBuild things.",
+      "links": [],
+      "latency_ms": 430.5
+    }
+  ],
+  "errors": [
+    {
+      "url": "https://blocked.example/careers",
+      "error": "bot_blocked",
+      "status": 403
+    },
+    {
+      "url": "https://empty.example/jobs",
+      "error": "empty_content",
+      "status": null
+    }
+  ],
+  "request_id": "req_fetch_1"
+}

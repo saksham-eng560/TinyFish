@@ -73,7 +73,7 @@ sequenceDiagram
 
     B->>W: scan_due_users (every few hours)
     W->>F: fetch postings (ATS APIs, careers pages)
-    W->>DB: dedupe, score 0–100, save as "matched"
+    W->>DB: dedupe, score 0 to 100, save as "matched"
     U->>DB: Swipe Review: keep (→ "preparing")
     W->>W: tailor resume (truthfulness check), cover letter, answers
     W->>F: open the form in Chromium, fill it, screenshot (no submit)
@@ -191,6 +191,17 @@ Around every call:
 | CSRF origin check, HTTPS + HSTS, refusing to start with default secrets in production | `app/main.py`, `config.require_production_ready` |
 | Upload checks (size, magic bytes, safe names), owner-only file access, PII-masked logs | `services/uploads.py`, `api/files.py`, `core/log_privacy.py` |
 | Demo mode: only the bundled careers site, dry run, real-world actions off | `services/demo_site.py`, `api/deps.NotInDemo` |
+
+## TinyFish job discovery
+
+TinyFish is one more job source, and the TinyFish Finder runs the same code. `TinyFishScraper.discover`
+(`backend/app/scrapers/tinyfish.py`) runs Search, then Fetch, then the Agent, and sends the results to the existing
+ranking and scan code. Search and Fetch are wrapped by `backend/app/services/tinyfish_client.py`, the only module that
+calls TinyFish over HTTP. Query planning, URL classification and Agent output checks live in
+`backend/app/scrapers/tinyfish_parse.py`, and the 0 to 100 ranking in `backend/app/services/tinyfish_ranker.py`. The
+Finder runs as a background task (`tinyfish_search`), and its progress reaches the dashboard through the same WebSocket
+as scans. The gated-host rule is enforced at three points: the Search exclusions, the URL classifier, and a second check
+before any URL is stored. Details: [TINYFISH.md](TINYFISH.md).
 
 ## Project structure
 

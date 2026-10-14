@@ -28,6 +28,7 @@ from app.api import (
     onboarding,
     resumes,
     review,
+    tinyfish,
     users,
 )
 from app.api.deps import default_rate_limit, extract_token, limiter
@@ -149,7 +150,8 @@ async def security_headers(request: Request, call_next):  # type: ignore[no-unty
 
 
 for router in (auth.router, onboarding.router, users.router, resumes.router, jobs.router, applications.router, agent.router,
-               communications.router, interviews.router, analytics.router, review.router, files.router, demo_site.router):
+               communications.router, interviews.router, analytics.router, review.router, files.router, demo_site.router,
+               tinyfish.router):
     app.include_router(router, prefix=settings.API_PREFIX)
 
 

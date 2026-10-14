@@ -1,0 +1,45 @@
+{
+  "query": "software engineer intern jobs",
+  "results": [
+    {
+      "position": 1,
+      "site_name": "job-boards.greenhouse.io",
+      "title": "Stripe Careers | Software Engineer, Intern",
+      "url": "https://job-boards.greenhouse.io/stripe/jobs/8031833",
+      "snippet": "As an intern at Stripe you'll work on projects..."
+    },
+    {
+      "position": 2,
+      "site_name": "job-boards.greenhouse.io",
+      "title": "Software Engineer - Intern (Summer 2027)",
+      "url": "https://job-boards.greenhouse.io/c3iot/jobs/8739323002",
+      "snippet": "As an Intern Software Engineer, you will design..."
+    },
+    {
+      "date": "2 days ago",
+      "position": 3,
+      "site_name": "workday.wd5.myworkdayjobs.com",
+      "title": "Software Development Engineer Intern - Myworkdayjobs.com",
+      "url": "https://workday.wd5.myworkdayjobs.com/en-US/Workday_Early_Career/job/Software-Development-Engineer-Intern_JR-0110810",
+      "snippet": "Currently enrolled in a Bachelor's..."
+    },
+    {
+      "position": 4,
+      "site_name": "jobs.ashbyhq.com",
+      "title": "Software Engineer Intern (Winter 2027) @ Cohere",
+      "url": "https://jobs.ashbyhq.com/cohere/8c035d3d-081d-4c8a-914a-72f4efaad254",
+      "snippet": "3-6 month internship..."
+    },
+    {
+      "date": "Oct 5, 2026",
+      "position": 5,
+      "site_name": "ffive.wd5.myworkdayjobs.com",
+      "title": "Software Development Engineer Intern (San Jose, CA)",
+      "url": "https://ffive.wd5.myworkdayjobs.com/en-US/f5jobs/job/Software-Development-Engineer-Intern--San-Jose--CA-_RP1039076",
+      "snippet": "..."
+    }
+  ],
+  "total_results": 5,
+  "page": 0,
+  "request_id": "req_search_1"
+}

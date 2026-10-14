@@ -1,0 +1,78 @@
+{
+  "query": "backend engineer",
+  "results": [
+    {
+      "position": 1,
+      "site_name": "boards.greenhouse.io",
+      "title": "Stripe Jobs",
+      "url": "https://boards.greenhouse.io/stripe",
+      "snippet": "Open roles at Stripe"
+    },
+    {
+      "position": 2,
+      "site_name": "jobs.lever.co",
+      "title": "Senior Software Engineer, Platform",
+      "url": "https://jobs.lever.co/acme/a1b2c3d4-0000-4000-8000-000000000001",
+      "snippet": "Build our platform"
+    },
+    {
+      "position": 3,
+      "site_name": "initech.example",
+      "title": "Backend Engineer Intern - Initech",
+      "url": "https://initech.example/careers/jobs/backend-engineer-intern-123?utm_source=newsletter",
+      "snippet": "Python services"
+    },
+    {
+      "position": 4,
+      "site_name": "initech.example",
+      "title": "Backend Engineer Intern - Initech",
+      "url": "https://initech.example/careers/jobs/backend-engineer-intern-123",
+      "snippet": "Python services"
+    },
+    {
+      "position": 5,
+      "site_name": "acme.example",
+      "title": "Careers at Acme Labs",
+      "url": "https://acme.example/careers",
+      "snippet": "Join Acme"
+    },
+    {
+      "position": 6,
+      "site_name": "globex.example",
+      "title": "Careers | Globex",
+      "url": "https://globex.example/careers",
+      "snippet": "Globex open roles"
+    },
+    {
+      "position": 7,
+      "site_name": "www.linkedin.com",
+      "title": "Backend Engineer at Acme - LinkedIn",
+      "url": "https://www.linkedin.com/jobs/view/3999999",
+      "snippet": "Apply on LinkedIn"
+    },
+    {
+      "position": 8,
+      "site_name": "stripe.example",
+      "title": "Backend Engineer, Payments | Stripe",
+      "url": "https://stripe.example/careers/jobs/backend-engineer-payments-7001",
+      "snippet": "Payments"
+    },
+    {
+      "position": 9,
+      "site_name": "blog.example",
+      "title": "Our funding round",
+      "url": "https://blog.example/news/our-funding-round",
+      "snippet": "News"
+    },
+    {
+      "position": 10,
+      "site_name": "job-boards.greenhouse.io",
+      "title": "Backend Engineer, Payments",
+      "url": "https://job-boards.greenhouse.io/stripe/jobs/7001?gh_src=abc",
+      "snippet": "Payments backend"
+    }
+  ],
+  "total_results": 10,
+  "page": 0,
+  "request_id": "req_pipeline_search"
+}

@@ -82,6 +82,9 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     "skip_suspicious_companies": True,  # postings with scam signs (fees, WhatsApp-only, MLM...) are skipped
     "trusted_companies": [],            # companies you marked legit: applied to automatically like verified ones
     "scan_top_companies": True,         # every scan also searches big tech, product companies, top startups, AI
+    # --- TinyFish (scrapers/tinyfish.py); only used when TINYFISH_API_KEY is set ---
+    "tinyfish_enabled": True,           # scans also use TinyFish Search / Fetch to find openings on live careers pages
+    "tinyfish_agent_runs": 2,           # TinyFish Agent runs per scan for pages Fetch can't read (0-5; scheduled scans use at most 1)
     "sources": {
         # ATS boards to crawl directly (public APIs, no login needed)
         "greenhouse_boards": [],   # e.g. ["stripe", "airbnb"]

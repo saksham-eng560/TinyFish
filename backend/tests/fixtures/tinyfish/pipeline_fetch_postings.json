@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "url": "https://initech.example/careers/jobs/backend-engineer-intern-123",
+      "final_url": "https://initech.example/careers/jobs/backend-engineer-intern-123",
+      "title": "",
+      "format": "html",
+      "text": "<!doctype html><html><head><title>Backend Engineer Intern</title><meta property=\"og:site_name\" content=\"Initech\"><script type=\"application/ld+json\">{\"@context\": \"https://schema.org\", \"@type\": \"JobPosting\", \"title\": \"Backend Engineer Intern\", \"url\": \"https://initech.example/careers/jobs/backend-engineer-intern-123\", \"description\": \"<p>Build Python and FastAPI services. We offer visa sponsorship for international interns.</p>\", \"datePosted\": \"2026-10-10\", \"hiringOrganization\": {\"@type\": \"Organization\", \"name\": \"Initech\"}, \"jobLocation\": {\"@type\": \"Place\", \"address\": {\"@type\": \"PostalAddress\", \"addressLocality\": \"Bengaluru\", \"addressCountry\": \"IN\"}}}</script></head><body><main><h1>Backend Engineer Intern</h1><p>Details.</p></main></body></html>",
+      "links": [],
+      "latency_ms": 300.0
+    },
+    {
+      "url": "https://stripe.example/careers/jobs/backend-engineer-payments-7001",
+      "final_url": "https://stripe.example/careers/jobs/backend-engineer-payments-7001",
+      "title": "",
+      "format": "html",
+      "text": "<!doctype html><html><head><title>Backend Engineer, Payments</title><meta property=\"og:site_name\" content=\"Stripe\"><script type=\"application/ld+json\">{\"@context\": \"https://schema.org\", \"@type\": \"JobPosting\", \"title\": \"Backend Engineer, Payments\", \"url\": \"https://stripe.example/careers/jobs/backend-engineer-payments-7001\", \"description\": \"<p>Build Python and FastAPI services. </p>\", \"datePosted\": \"2026-10-10\", \"hiringOrganization\": {\"@type\": \"Organization\", \"name\": \"Stripe\"}, \"jobLocation\": {\"@type\": \"Place\", \"address\": {\"@type\": \"PostalAddress\", \"addressLocality\": \"San Francisco\", \"addressCountry\": \"CA\"}}}</script></head><body><main><h1>Backend Engineer, Payments</h1><p>Details.</p></main></body></html>",
+      "links": [],
+      "latency_ms": 300.0
+    },
+    {
+      "url": "https://globex.example/careers/jobs/platform-engineer-77",
+      "final_url": "https://globex.example/careers/jobs/platform-engineer-77",
+      "title": "",
+      "format": "html",
+      "text": "<html><head><title>Platform Engineer | Globex</title><meta property=\"og:site_name\" content=\"Globex\"></head><body><main><h1>Platform Engineer</h1><p>Location: Remote</p><p>Run our Kubernetes platform and keep the lights on. Posted 2 days ago.</p></main></body></html>",
+      "links": [],
+      "latency_ms": 300.0
+    }
+  ],
+  "errors": [],
+  "request_id": "req_pipeline_postings"
+}

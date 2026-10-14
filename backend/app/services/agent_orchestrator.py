@@ -297,6 +297,9 @@ def scan_platforms(prefs: dict[str, Any], requested: list[str] | None = None) ->
     if not requested and prefs.get("scan_top_companies", True) and "top_companies" in SCRAPERS \
             and "top_companies" not in chosen:
         chosen.insert(0, "top_companies")
+    if not requested and settings.tinyfish_enabled and prefs.get("tinyfish_enabled", True) and "tinyfish" in SCRAPERS \
+            and "tinyfish" not in chosen:
+        chosen.append("tinyfish")  # Search -> Fetch -> Agent, only with a TINYFISH_API_KEY
     return chosen
 
 
@@ -348,6 +351,27 @@ def application_platform(job: Job) -> ATSPlatform:
 
 
 # --------------------------------------------------------------------------- discovery
+def clamp_agent_runs(asked: Any) -> int:
+    """TinyFish Agent runs allowed for a scan: the preference (default 2), never above TINYFISH_AGENT_MAX_RUNS_PER_SCAN."""
+    try:
+        runs = 2 if asked is None else int(asked)
+    except (TypeError, ValueError):
+        runs = 2
+    return max(0, min(runs, settings.TINYFISH_AGENT_MAX_RUNS_PER_SCAN))
+
+
+def tinyfish_usage_line(usage: dict[str, int]) -> str:
+    """"Search 6 · Fetch 14 URLs · Agent 2 runs (11 steps)": the TinyFish calls a scan used (empty when it used none)."""
+    parts = []
+    if usage.get("search_calls"):
+        parts.append(f"Search {usage['search_calls']}")
+    if usage.get("fetch_urls"):
+        parts.append(f"Fetch {usage['fetch_urls']} URL{'s' if usage['fetch_urls'] != 1 else ''}")
+    if usage.get("agent_runs"):
+        parts.append(f"Agent {usage['agent_runs']} run{'s' if usage['agent_runs'] != 1 else ''} ({usage.get('agent_steps', 0)} steps)")
+    return " · ".join(parts)
+
+
 def discover_jobs(query: SearchQuery, platforms: list[str], run: RunLog | None = None,
                   progress: ScanProgress | None = None, tick: Callable[[], None] | None = None) -> list[ScrapedJob]:
     """Search every platform at once (up to SCAN_SOURCE_CONCURRENCY). Sources are asked to wrap up
@@ -366,7 +390,8 @@ def discover_jobs(query: SearchQuery, platforms: list[str], run: RunLog | None =
         if progress is None:
             return SCRAPERS[platform]().search(query)
         progress.source_started(platform)
-        scoped = dataclasses.replace(query, progress=lambda done, total: progress.source_step(platform, done, total))
+        scoped = dataclasses.replace(query, progress=lambda done, total: progress.source_step(platform, done, total),
+                                     detail=lambda text, extra: progress.source_detail(platform, text, extra))
         return SCRAPERS[platform]().search(scoped)
 
     pool = ThreadPoolExecutor(max_workers=max(1, min(settings.SCAN_SOURCE_CONCURRENCY, len(usable))),
@@ -384,6 +409,9 @@ def discover_jobs(query: SearchQuery, platforms: list[str], run: RunLog | None =
                     results.extend(found)
                     if run:
                         run.log(f"{platform}: found {len(found)} jobs")
+                        usage = progress.sources[platform].get("usage") if progress else None
+                        if usage and (line := tinyfish_usage_line(usage)):
+                            run.log(f"{platform}: {line}")
                     if progress:
                         progress.source_finished(platform, len(found))
                 except ScraperError as exc:
@@ -538,6 +566,9 @@ def run_scan(db: Session, user: User, trigger: str = "user", platforms: list[str
         query = SearchQuery.from_preferences(prefs, limit=int(prefs.get("max_jobs_per_source") or settings.MAX_JOBS_PER_SOURCE))
         query = dataclasses.replace(query, known_urls=known_source_urls(db),
                                     allowed_gated=frozenset(p for p in sources.GATED_SOURCES if sources.has_consent(user, p)))
+        if settings.tinyfish_enabled:  # TinyFish Agent runs: your preference, capped; a scheduled scan spends at most one
+            runs = clamp_agent_runs(query.agent_runs)
+            query = dataclasses.replace(query, agent_runs=runs if trigger == "user" else min(runs, 1))
         run.log(f"Scanning {', '.join(chosen)} for {', '.join(query.keywords) or 'all roles'}"
                 + (" (internships only)" if query.internships_only else ""))
         progress.set_phase("discovering", f"Searching {len(progress.sources)} job sources at once")

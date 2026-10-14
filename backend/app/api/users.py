@@ -35,6 +35,7 @@ from app.services.presets import apply_preset, clamp_daily_cap
 from app.services.privacy import delete_user_data, export_user_data, export_zip
 from app.services.progress import send_now as send_progress_now
 from app.services.question_answerer import STANDARD_FIELDS
+from app.services.tinyfish_client import NOT_CONFIGURED_HINT, TinyFishError, get_client, usage_today
 from app.submitters import internshala_apply
 from app.worker.dispatch import enqueue
 
@@ -121,6 +122,15 @@ def _validate_internshala(prefs: dict) -> None:  # type: ignore[type-arg]
         raise HTTPException(422, "trusted_companies must be a list of company names")
 
 
+def _validate_tinyfish(prefs: dict) -> None:  # type: ignore[type-arg]
+    if not isinstance(prefs.get("tinyfish_enabled", True), bool):
+        raise HTTPException(422, "tinyfish_enabled must be true or false")
+    runs = prefs.get("tinyfish_agent_runs", 2)
+    ceiling = settings.TINYFISH_AGENT_MAX_RUNS_PER_SCAN
+    if not isinstance(runs, int) or isinstance(runs, bool) or not 0 <= runs <= ceiling:
+        raise HTTPException(422, f"tinyfish_agent_runs must be 0-{ceiling}")
+
+
 def validate_preferences(prefs: dict) -> None:  # type: ignore[type-arg]
     """Checks every merged preference set before it is saved (Settings and onboarding)."""
     threshold = prefs.get("auto_apply_threshold")
@@ -146,6 +156,7 @@ def validate_preferences(prefs: dict) -> None:  # type: ignore[type-arg]
         raise HTTPException(422, "dry_run must be true or false")
     _validate_focus(prefs)
     _validate_internshala(prefs)
+    _validate_tinyfish(prefs)
 
 
 @router.put("/preferences")
@@ -312,6 +323,14 @@ def integrations(user: CurrentUser) -> dict:
             "daily_limit": int(user.prefs.get("internshala_daily_limit") or 15),
         },
         "llm": llm_section(),
+        "tinyfish": {  # never the key itself
+            "configured": bool((settings.TINYFISH_API_KEY or "").strip()),
+            "enabled": settings.tinyfish_enabled and bool(user.prefs.get("tinyfish_enabled", True)),
+            "agent_available": settings.tinyfish_agent_allowed,
+            "agent_runs_per_scan": orch.clamp_agent_runs(user.prefs.get("tinyfish_agent_runs")),
+            "agent_runs_max": settings.TINYFISH_AGENT_MAX_RUNS_PER_SCAN,
+            "usage_today": usage_today(str(user.id)),
+        },
         "automation": {"proxies": len(proxy_manager.urls), "captcha": bool(settings.CAPTCHA_API_KEY),
                        "dry_run": settings.SUBMISSION_DRY_RUN, "auto_stage": settings.AUTO_STAGE_APPLICATIONS},
         "notifications": {"smtp": bool(settings.SMTP_HOST), "discord": bool(user.prefs.get("discord_webhook_url") or settings.DISCORD_WEBHOOK_URL),
@@ -326,6 +345,20 @@ def integrations(user: CurrentUser) -> dict:
 def test_llm(request: Request, user: CurrentUser) -> dict:
     """Send one tiny request to the configured AI model: {ok, provider, model, latency_ms, sample | error, hint}."""
     return connection_test()
+
+
+@router.post("/integrations/tinyfish/test")
+@limiter.limit("10/minute")
+def test_tinyfish(request: Request, user: CurrentUser) -> dict:
+    """One tiny TinyFish Search: {ok, latency_ms, results, error, hint}. The key lives only in .env."""
+    if not settings.tinyfish_enabled:
+        if (settings.TINYFISH_API_KEY or "").strip():
+            return {"ok": False, "latency_ms": 0, "results": 0, "error": "switched off", "hint": "TinyFish is switched off (TINYFISH_ENABLED=false)."}
+        return {"ok": False, "latency_ms": 0, "results": 0, "error": "not configured", "hint": NOT_CONFIGURED_HINT}
+    try:
+        return get_client(str(user.id)).ping()
+    except TinyFishError as exc:
+        return {"ok": False, "latency_ms": 0, "results": 0, "error": str(exc), "hint": None}
 
 
 @router.post("/integrations/ollama/pull", status_code=202, dependencies=[NotInDemo])

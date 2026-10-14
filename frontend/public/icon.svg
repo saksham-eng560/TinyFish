@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- HireFlow mark: a bold white "H" whose crossbar rises (progress), on HireFlow blue (matches the site logo) -->
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3B82F6"/><stop offset="1" stop-color="#1D4ED8"/></linearGradient></defs>
+  <!-- HireFlow mark: a bold near-black "H" whose crossbar rises (progress), on TinyFish orange (matches the site logo) -->
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A33"/><stop offset="1" stop-color="#E85D00"/></linearGradient></defs>
   <rect width="512" height="512" rx="120" fill="url(#g)"/>
-  <path d="M164 136v240M348 136v240" fill="none" stroke="#fff" stroke-width="76" stroke-linecap="round"/><path d="M164 300L348 212" fill="none" stroke="#fff" stroke-width="64" stroke-linecap="round"/>
+  <path d="M164 136v240M348 136v240" fill="none" stroke="#0A0A0A" stroke-width="76" stroke-linecap="round"/><path d="M164 300L348 212" fill="none" stroke="#0A0A0A" stroke-width="64" stroke-linecap="round"/>
 </svg>

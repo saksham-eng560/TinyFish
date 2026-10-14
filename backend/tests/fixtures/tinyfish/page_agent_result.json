@@ -1,0 +1,17 @@
+{
+  "company": "Acme Robotics",
+  "blocked": false,
+  "jobs": [
+    {"title": "Backend Engineer Intern", "apply_url": "https://acme.com/careers/jobs/backend-engineer-intern-123?utm_source=x",
+     "location": "Bengaluru, India", "posted": "2026-10-11", "employment_type": "Internship", "seniority": "internship",
+     "summary": "<p>Build Python services.</p>", "visa_sponsorship": "yes"},
+    {"title": "Platform Engineer", "apply_url": "https://boards.greenhouse.io/acmerobotics/jobs/7001",
+     "location": "Remote", "posted": "3 days ago", "employment_type": "Full-time", "seniority": "Senior",
+     "summary": null, "visa_sponsorship": "no"},
+    {"title": "Insecure link", "apply_url": "http://acme.com/careers/jobs/insecure-1", "visa_sponsorship": "unknown"},
+    {"title": "LinkedIn copy", "apply_url": "https://www.linkedin.com/jobs/view/3999999", "visa_sponsorship": "unknown"},
+    {"title": "Somewhere else", "apply_url": "https://evil.example.net/jobs/1", "visa_sponsorship": "unknown"},
+    {"title": "No url", "apply_url": null, "visa_sponsorship": "unknown"},
+    {"apply_url": "https://acme.com/careers/jobs/untitled-1"}
+  ]
+}

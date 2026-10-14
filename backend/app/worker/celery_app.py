@@ -23,6 +23,7 @@ celery_app = Celery(
         "app.worker.tasks_sync",
         "app.worker.tasks_calendar",
         "app.worker.tasks_demo",
+        "app.worker.tasks_tinyfish",
     ],
 )
 

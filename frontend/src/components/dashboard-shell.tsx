@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSWRConfig } from "swr";
 import { LayoutGroup, motion } from "framer-motion";
 import {
-  BarChart3, Briefcase, CalendarDays, CheckCheck, Crown, FileText, Inbox, Layers, LayoutDashboard, ListChecks, LogOut, Menu, ScrollText,
+  BarChart3, Briefcase, CalendarDays, CheckCheck, Crown, FileText, Fish, Inbox, Layers, LayoutDashboard, ListChecks, LogOut, Menu, ScrollText,
   Send, Settings, type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/brand";
@@ -41,6 +41,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
     section: "Agent",
     items: [
       { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+      { href: "/dashboard/tinyfish", label: "TinyFish Finder", icon: Fish },
       { href: "/dashboard/review", label: "Swipe Review", icon: Layers, badge: "review" },
       { href: "/dashboard/top-companies", label: "Top companies", icon: Crown },
       { href: "/dashboard/submit", label: "Ready to submit", icon: ListChecks, badge: "pending" },
@@ -124,6 +125,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       });
       return;
     }
+    if (event.type === "tinyfish_progress") {
+      mutate((key) => typeof key === "string" && key.startsWith("/tinyfish"));
+      return;
+    }
     if (event.type === "agent_paused") {
       void mutate("/agent/status");
       return;
@@ -205,6 +210,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       <p className="mt-3 flex items-center gap-2">
         <span className={cn("h-2 w-2 rounded-full", live ? "animate-pulse-dot bg-success" : "bg-muted-foreground/50")} />
         {live ? "Live updates on" : "Polling for updates"}
+      </p>
+      <p className="mt-3">
+        <a href="https://www.tinyfish.ai" target="_blank" rel="noopener noreferrer"
+          className="text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          Powered by TinyFish
+        </a>
       </p>
     </div>
   );

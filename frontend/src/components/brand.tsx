@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ logo */
-/* A bold white "H" whose crossbar rises (progress), on HireFlow blue (same drawing as public/icon.svg). */
+/* A bold near-black "H" whose crossbar rises (progress), on TinyFish orange (same drawing as public/icon.svg). */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" className={cn("h-6 w-6", className)} aria-hidden>

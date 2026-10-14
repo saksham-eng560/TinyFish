@@ -1,0 +1,12 @@
+data: {"type": "STARTED", "run_id": "run_123", "timestamp": "2026-10-14T10:00:01Z"}
+
+data: {"type": "STREAMING_URL", "run_id": "run_123", "streaming_url": "https://stream.tinyfish.example/run_123", "timestamp": "2026-10-14T10:00:02Z"}
+
+data: {"type": "PROGRESS", "run_id": "run_123", "purpose": "Opening the careers page", "timestamp": "2026-10-14T10:00:05Z"}
+
+data: {"type": "HEARTBEAT", "timestamp": "2026-10-14T10:00:10Z"}
+
+data: {"type": "PROGRESS", "run_id": "run_123", "purpose": "Clicking Load more", "timestamp": "2026-10-14T10:00:20Z"}
+
+data: {"type": "COMPLETE", "run_id": "run_123", "status": "COMPLETED", "num_of_steps": 6, "result": {"company": "Acme", "jobs": [{"title": "Backend Engineer", "apply_url": "https://acme.example/careers/backend-engineer-1", "visa_sponsorship": "unknown"}]}, "error": null, "timestamp": "2026-10-14T10:00:40Z"}
+

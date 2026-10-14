@@ -247,6 +247,9 @@ def interview_out(i: Interview, brief: bool = False) -> dict[str, Any]:
 
 
 def run_out(run: AgentRun, include_log: bool = False) -> dict[str, Any]:
+    progress = run.progress
+    if isinstance(progress, dict) and "results" in progress:  # a TinyFish search's listings: only GET /tinyfish/search/{id} returns them
+        progress = {k: v for k, v in progress.items() if k != "results"}
     out = {
         "id": str(run.id),
         "run_type": run.run_type,
@@ -260,7 +263,7 @@ def run_out(run: AgentRun, include_log: bool = False) -> dict[str, Any]:
         "started_at": iso(run.started_at),
         "completed_at": iso(run.completed_at),
         "duration_seconds": run.duration_seconds,
-        "progress": run.progress,
+        "progress": progress,
     }
     if include_log:
         out["log"] = run.log or []

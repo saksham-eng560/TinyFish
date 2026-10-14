@@ -40,7 +40,15 @@ def register(name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
 
 def _load_registry() -> None:
     if not _registry:
-        from app.worker import tasks_apply, tasks_calendar, tasks_demo, tasks_email, tasks_scan, tasks_sync  # noqa: F401
+        from app.worker import (  # noqa: F401
+            tasks_apply,
+            tasks_calendar,
+            tasks_demo,
+            tasks_email,
+            tasks_scan,
+            tasks_sync,
+            tasks_tinyfish,
+        )
 
 
 def use_local_execution() -> bool:

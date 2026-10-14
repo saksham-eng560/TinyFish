@@ -20,7 +20,7 @@ PAIRS = [
     ("secondary-foreground", "secondary"), ("accent-foreground", "accent"), ("card-foreground", "card"),
     ("success", "background"), ("success-foreground", "success"), ("info", "background"), ("info-foreground", "info"),
     ("warning", "background"), ("warning-foreground", "warning"), ("destructive", "background"),
-    ("destructive-foreground", "destructive"), ("danger", "background"), ("danger-foreground", "danger"),
+    ("destructive-foreground", "destructive"), ("danger", "background"), ("danger-foreground", "danger"), ("brand-foreground", "brand"),
 ]
 TOKEN = re.compile(r"--([a-z0-9-]+):\s*([0-9.]+) ([0-9.]+)% ([0-9.]+)%")
 

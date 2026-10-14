@@ -74,6 +74,22 @@ class ScanProgress:
             self.sources[name]["done"] = done
             self.sources[name]["total"] = total
 
+    def source_detail(self, name: str, text: str | None = None, extra: dict[str, Any] | None = None) -> None:
+        """A live status line for a source ("Clicking Load more") plus the extras a source may publish: its API ``usage``
+        counts and the https ``streaming_url`` of a browser session. Status / found / done are never touched."""
+        with self._lock:
+            src = self.sources.get(name)
+            if src is None:
+                return
+            if text:
+                src["detail"] = text[:120]
+            extra = extra or {}
+            if isinstance(extra.get("usage"), dict):
+                src["usage"] = {str(k): int(v) for k, v in extra["usage"].items() if isinstance(v, int | float)}
+            url = extra.get("streaming_url")
+            if isinstance(url, str) and url.startswith("https://"):
+                src["streaming_url"] = url[:500]
+
     def source_finished(self, name: str, found: int, status: str = "done", error: str | None = None) -> None:
         with self._lock:
             src = self.sources[name]

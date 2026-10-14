@@ -11,11 +11,11 @@ searches LinkedIn, Indeed, Glassdoor and Wellfound with a real browser. It remov
 sources, and scans run on a schedule (every 6 hours by default) or when you click **Scan for jobs now**.
 You can also paste any job URL.
 
-**Matching.** Each job gets a 0–100 score across five parts: skills, experience, industry, location
+**Matching.** Each job gets a 0 to 100 score across five parts: skills, experience, industry, location
 and compensation. The score also explains which of your skills are strong matches and which the job
 wants that you don't have. Only your hard filters remove a job automatically (companies to avoid,
 excluded title keywords, job types, expired deadlines and, optionally, postings that don't sponsor
-visas). Everything else — even a low score — goes to **Swipe Review**, best matches first, with
+visas). Everything else, even a low score, goes to **Swipe Review**, best matches first, with
 heads-ups such as "not a remote role". (The original automatic mode, which skips jobs under a
 threshold and prepares the rest, is still available in Settings.)
 
@@ -111,7 +111,7 @@ Mass-apply settings (all in Settings › Mass apply):
 | `trust_generated_answers` | on | The agent's answers to open questions ("Why this company?") don't hold a kept job back. Eligibility questions are never guessed either way. |
 | `auto_keep_min_score` | off | Keep jobs scoring at least this without swiping. |
 | `exclude_no_sponsorship` | off | Skip postings that say they don't sponsor visas or require citizenship. |
-| `max_jobs_per_source` | 50 | How many postings each source may return per scan (10–1000). |
+| `max_jobs_per_source` | 50 | How many postings each source may return per scan (10 to 1000). |
 | `sources.internship_lists` | SimplifyJobs + vanshb03 | Curated lists: `simplify-internships`, `vanshb03-internships`, `simplify-new-grad`, or any `listings.json` URL in the same format. |
 
 Every submission also respects your daily limit (25 at most, enforced by the server), at most 3
@@ -134,7 +134,7 @@ as the prime location. All of it is in Settings › Preferences › Internship f
   **Prime location**, **India** and **Summer 2027** badges.
 - **~90% India.** After each scan the agent keeps roughly 9 Indian postings for every 1 from elsewhere
   (remote roles preferred). Cities such as "Bengaluru, Karnataka" count as India even when the listing
-  doesn't say so. Change the share with the slider (50–100%) or switch the focus off.
+  doesn't say so. Change the share with the slider (50 to 100%) or switch the focus off.
 - **Summer 2027.** Postings clearly for another term ("Summer 2026", "Fall '26", "Intern 2026") are
   skipped. Ones that don't say are kept, and ones that start immediately get a heads-up.
 - **Intern roles only, for your year.** Every source (big tech, top companies, Internshala, LinkedIn,
@@ -303,7 +303,7 @@ copy, for trying the whole loop or showing it to others:
   employer.
 - Real-world actions are off: password changes, Google (Gmail and Calendar), the extension, job-site
   logins, ATS credentials, webhooks and e-mail. They answer 403 and the settings say why.
-- A banner on every page says **Demo — nothing is really sent**, and every night (03:37 UTC) all
+- A banner on every page says **Demo: nothing is really sent**, and every night (03:37 UTC) all
   accounts and jobs are wiped and the demo account is re-created.
 
 In Docker the worker's browser reaches the demo site through the api container
@@ -403,7 +403,7 @@ The watch is renewed daily.
 > sources** and accept the risk to your account there. You can turn them off again at any time.
 
 LinkedIn search and Easy Apply run under your own LinkedIn session, and the optional Internshala bot
-under your own Internshala login. The extension in [`extension/`](../extension) ("HireFlow — Session
+under your own Internshala login. The extension in [`extension/`](../extension) ("HireFlow: Session
 Sync") copies those sessions to your HireFlow server. They are stored encrypted and re-synced every
 12 hours and whenever LinkedIn or Internshala renews them.
 
@@ -445,7 +445,7 @@ a reCAPTCHA, so the bot borrows the login of your real Chrome instead.
    Anything the agent is unsure about (a required question it couldn't answer, a low-confidence
    eligibility answer) still waits for you.
 
-Limits: at most **Daily limit** Internshala applications a day (15 by default, 25 at most), 60–180
+Limits: at most **Daily limit** Internshala applications a day (15 by default, 25 at most), 60 to 180
 seconds apart. Approved applications over the limit wait and go out the next day.
 
 What happens when an internship can't be applied to here:
@@ -465,6 +465,21 @@ What happens when an internship can't be applied to here:
 > time; every selector the bot uses is in one place, `SELECTORS` in
 > [`backend/app/submitters/internshala_apply.py`](../backend/app/submitters/internshala_apply.py).
 
+## TinyFish Finder
+
+The **TinyFish Finder** (sidebar, under **Agent**) finds openings for you without a resume.
+
+1. Open `/dashboard/tinyfish`. If the page says TinyFish isn't configured, add `TINYFISH_API_KEY` to `.env` and restart.
+2. Fill in roles, locations, keywords and companies, or press **Use my preferences** to copy them from your settings.
+   Pick seniority, and turn on **I need visa sponsorship** or **Remote only** if they apply.
+3. Press **Find openings**. The Search, Fetch and Agent cards show what TinyFish is doing. **Watch live** shows the
+   Agent's browser when it's running.
+4. Read the ranked list. Each score has a **Why this ranks** breakdown. **Apply** opens the original posting in a new tab.
+5. Tick the listings you want and press **Save N to Swipe Review**. Nothing is applied for you.
+
+Settings › Integrations has the TinyFish card: **Test connection**, **Use TinyFish in scans**, and **Agent runs per
+scan**. Details: [TINYFISH.md](TINYFISH.md).
+
 ## Troubleshooting
 
 | Symptom | Fix |
@@ -480,7 +495,7 @@ What happens when an internship can't be applied to here:
 | Internshala session expired | Open Internshala in Chrome (log in if needed) and click **Sync Internshala session** in the extension, then **Check session** in Settings › Integrations. |
 | Internshala bot says it can't find the Apply button or the form | Internshala changed its pages. Update the selectors in `SELECTORS` in `backend/app/submitters/internshala_apply.py`; meanwhile apply yourself and click **I Applied**. |
 | Google disconnects every 7 days | Your OAuth consent screen is in Testing mode (see [Connect Gmail and Google Calendar](#connect-gmail-and-google-calendar)). |
-| Chromium crashes in Docker | Give the worker more shared memory (`shm_size`, 1–2 GB is already set) and RAM. |
+| Chromium crashes in Docker | Give the worker more shared memory (`shm_size`, 1 to 2 GB is already set) and RAM. |
 | Change the AI's behaviour | Edit the prompt files in `prompts/`, then restart the API and worker. |
 | Test AI: "Ollama isn't running" | Open the Ollama app (Mac) or run `ollama serve`. On a server: `COMPOSE_PROFILES=ollama` in `.env`, then `docker compose -f docker-compose.prod.yml up -d`. Check `OLLAMA_BASE_URL`. |
 | Test AI: "model isn't downloaded" | Press **Download model** in Settings › Integrations, or run `ollama pull <model>` where Ollama runs. |

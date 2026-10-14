@@ -28,6 +28,7 @@ PLATFORM_LIMITS: dict[str, PlatformLimit] = {
     "glassdoor": PlatformLimit(100, 20, (120, 240)),
     "wellfound": PlatformLimit(100, 20, (60, 180)),
     "internshala": PlatformLimit(120, 25, (60, 180)),  # discovery + the opt-in apply bot (also internshala_daily_limit)
+    "tinyfish": PlatformLimit(1500, 0, (0, 0)),  # Search / Fetch / Agent API calls (never applies anywhere)
 }
 DEFAULT_LIMIT = PlatformLimit(100, 20, (60, 180))
 RATE_LIMIT_COOLDOWN_SECONDS = 15 * 60  # pause a platform for 15 min after HTTP 429
@@ -44,11 +45,11 @@ class RateLimiter:
         self._lock = threading.Lock()
 
     # ------------------------------------------------------------------ primitives
-    def _incr(self, key: str, ttl: int) -> int:
+    def _incr(self, key: str, ttl: int, amount: int = 1) -> int:
         client = get_redis()
         if client is not None:
-            value = int(client.incr(key))
-            if value == 1:
+            value = int(client.incrby(key, amount))
+            if value == amount:
                 client.expire(key, ttl)
             return value
         with self._lock:
@@ -56,7 +57,7 @@ class RateLimiter:
             value, expires = self._mem.get(key, (0, now + ttl))
             if expires < now:
                 value, expires = 0, now + ttl
-            value += 1
+            value += amount
             self._mem[key] = (value, expires)
             return int(value)
 
@@ -76,6 +77,14 @@ class RateLimiter:
             return
         with self._lock:
             self._mem[key] = (value, time.time() + ttl)
+
+    # ------------------------------------------------------------------ usage meters
+    def incr_counter(self, key: str, ttl: int, amount: int = 1) -> int:
+        """Add ``amount`` to a plain counter that expires ``ttl`` seconds after it was first set (e.g. a per-user daily meter)."""
+        return self._incr(key, ttl, amount)
+
+    def get_counter(self, key: str) -> float:
+        return self._get(key)
 
     # ------------------------------------------------------------------ page loads / API calls
     def allow_request(self, platform: str) -> bool:

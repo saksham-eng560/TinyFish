@@ -1,0 +1,26 @@
+{
+  "results": [
+    {
+      "url": "https://acme.example/careers",
+      "final_url": "https://acme.example/careers",
+      "title": "Careers at Acme Labs",
+      "format": "markdown",
+      "text": "# Careers at Acme Labs\n\nWe build robots. Our board lives at [jobs.ashbyhq.com/acme-labs](https://jobs.ashbyhq.com/acme-labs).\n",
+      "links": [
+        "https://jobs.ashbyhq.com/acme-labs"
+      ],
+      "latency_ms": 300.0
+    },
+    {
+      "url": "https://globex.example/careers",
+      "final_url": "https://globex.example/careers",
+      "title": "Careers at Globex",
+      "format": "markdown",
+      "text": "# Careers at Globex\n\n## Open roles\n\n- [Platform Engineer](/careers/jobs/platform-engineer-77) - Remote\n- [Marketing Lead](/careers/jobs/marketing-lead-12) - Springfield\n- [All teams](https://globex.example/careers/teams)\n",
+      "links": [],
+      "latency_ms": 300.0
+    }
+  ],
+  "errors": [],
+  "request_id": "req_pipeline_careers"
+}

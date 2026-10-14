@@ -91,6 +91,7 @@ export const PLATFORM_LABELS: Record<string, string> = {
   workday: "Workday",
   ashby: "Ashby",
   generic: "Career pages",
+  tinyfish: "TinyFish",
   custom: "Company site",
   unknown: "Unknown",
 };
@@ -103,4 +104,15 @@ export function titleCase(value: string | null | undefined) {
 /** "1 offer", "3 offers". */
 export function plural(count: number, word: string, many = `${word}s`): string {
   return `${count.toLocaleString()} ${count === 1 ? word : many}`;
+}
+
+/** The URL when it parses and uses one of `protocols` (default: https only), else null. For links and frames built from third-party data. */
+export function safeUrl(value: string | null | undefined, protocols: string[] = ["https:"]): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return protocols.includes(url.protocol) ? url.toString() : null;
+  } catch {
+    return null;
+  }
 }

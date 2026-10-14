@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, cloneElement, isValidElement, useEffect, useId, useState } from "react";
 import useSWR from "swr";
-import { AlertTriangle, Bot, CheckCircle2, Copy, Cpu, Download, KeyRound, Link2, Mail, Puzzle, RefreshCw, Save, Trash2, Zap } from "lucide-react";
+import { AlertTriangle, Bot, CheckCircle2, Copy, Cpu, Download, Fish, KeyRound, Link2, Mail, Puzzle, RefreshCw, Save, Trash2, Zap } from "lucide-react";
 import { ErrorState } from "@/components/error-state";
 import { PageHeader } from "@/components/page-header";
 import { TagInput } from "@/components/tag-input";
@@ -25,7 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
 import { useIntegrations, useMe } from "@/hooks/use-applications";
 import { ApiError, api, del, fetcher, patch, post, put } from "@/lib/api-client";
-import type { FieldMapping, Integrations, LLMTestResult, LocationFocus, OllamaPullProgress, OnboardingProfiles, Preferences, StandardField, StudentInfo } from "@/lib/types";
+import type { FieldMapping, Integrations, LLMTestResult, LocationFocus, OllamaPullProgress, OnboardingProfiles, Preferences, StandardField, StudentInfo, TinyFishTestResult } from "@/lib/types";
 import { PLATFORM_LABELS, cn, timeAgo } from "@/lib/utils";
 
 // LinkedIn, Internshala, Indeed and Glassdoor forbid automation: they're turned on in their own section, with your OK
@@ -784,6 +784,87 @@ function AIModelCard({ integ, refresh }: { integ: Integrations; refresh: () => P
   );
 }
 
+/** TinyFish (Search + Fetch + Agent) for scans: whether the server has a key, a test call and the two scan switches. The key is env-only and never shown. */
+function TinyFishCard({ integ, refresh }: { integ: Integrations; refresh: () => Promise<unknown> }) {
+  const { data: me, mutate: mutateMe } = useMe();
+  const { saving, run } = useSaver();
+  const tf = integ.tinyfish;
+  const [enabled, setEnabled] = useState(tf.enabled);
+  const [runs, setRuns] = useState(tf.agent_runs_per_scan);
+  const [testing, setTesting] = useState(false);
+  const [result, setResult] = useState<TinyFishTestResult | null>(null);
+  useEffect(() => {
+    setEnabled(me?.preferences.tinyfish_enabled ?? tf.enabled);
+    setRuns(me?.preferences.tinyfish_agent_runs ?? tf.agent_runs_per_scan);
+  }, [me, tf.enabled, tf.agent_runs_per_scan]);
+
+  const runTest = async () => {
+    setTesting(true);
+    setResult(null);
+    try {
+      setResult(await post<TinyFishTestResult>("/users/me/integrations/tinyfish/test"));
+    } catch (err) {
+      setResult({ ok: false, error: err instanceof ApiError ? err.message : String(err) });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const used = tf.usage_today;
+  const usedToday = [
+    `${used.search_calls ?? 0} searches`, `${used.fetch_urls ?? 0} pages read`, `${used.agent_runs ?? 0} agent runs`,
+  ].join(" · ");
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><Fish className="h-4 w-4" /> TinyFish</CardTitle>
+        <CardDescription>
+          Finds openings on careers pages and job boards with TinyFish Search, Fetch and Agent, for scans and the TinyFish Finder.
+          The API key lives only in <code>.env</code> on the machine running the app. This page never asks for it or shows it.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-5 text-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          {tf.configured ? <Badge tone="success">Key configured</Badge> : <Badge tone="warning">No key</Badge>}
+          {tf.configured && !tf.agent_available && <Badge tone="muted">Agent off</Badge>}
+        </div>
+        {!tf.configured && (
+          <div className="flex items-start gap-2 text-muted-foreground">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+            <p>Add TINYFISH_API_KEY to your <code>.env</code> and restart. Until then scans skip TinyFish and everything else works as before.</p>
+          </div>
+        )}
+        <div className="flex flex-wrap items-center gap-3">
+          <Button variant="outline" size="sm" onClick={runTest} loading={testing}>{!testing && <Zap />} Test connection</Button>
+          <div aria-live="polite" className="text-xs">
+            {result && (result.ok
+              ? <span className="inline-flex items-center gap-1.5 text-success"><CheckCircle2 className="h-4 w-4" /> Connected · {result.latency_ms ?? "?"} ms · {result.results ?? 0} results</span>
+              : <span className="inline-flex items-start gap-1.5 text-warning"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> {result.hint || result.error || "The test failed."}</span>)}
+          </div>
+        </div>
+
+        <div>
+          <Row label="Use TinyFish in scans" hint="Adds TinyFish as a source when you scan. It only runs when the server has a key.">
+            <Switch checked={enabled} onCheckedChange={setEnabled} label="Use TinyFish in scans" />
+          </Row>
+          <Row label="Agent runs per scan" hint={`Each Agent step costs roughly $0.016. A scan uses at most this many runs (max ${tf.agent_runs_max}); scheduled scans use at most 1. 0 turns the Agent off for scans.`}>
+            <Select className="max-w-[10rem]" value={Math.min(runs, tf.agent_runs_max)} onChange={(e) => setRuns(Number(e.target.value))}>
+              {Array.from({ length: tf.agent_runs_max + 1 }, (_, n) => <option key={n} value={n}>{n} {n === 1 ? "run" : "runs"}</option>)}
+            </Select>
+          </Row>
+          <Row label="Used today"><p className="tabular-nums text-muted-foreground">{usedToday}</p></Row>
+        </div>
+        <Button loading={saving} onClick={() => run(async () => {
+          await put("/users/me/preferences", { preferences: { tinyfish_enabled: enabled, tinyfish_agent_runs: runs } });
+          await mutateMe();
+          await refresh();
+        })}><Save /> Save TinyFish settings</Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 function IntegrationsPanel() {
   const { data: integ, error: integError, mutate } = useIntegrations();
   const { data: me, mutate: mutateMe } = useMe();
@@ -812,6 +893,7 @@ function IntegrationsPanel() {
     <div className="space-y-6">
       <DemoNotice>In the demo, Google, the Chrome extension, job-site logins and webhooks are turned off: nothing real is connected or sent.</DemoNotice>
       <AIModelCard integ={integ} refresh={mutate} />
+      {integ.tinyfish && <TinyFishCard integ={integ} refresh={mutate} />}
 
       <Card>
         <CardHeader>

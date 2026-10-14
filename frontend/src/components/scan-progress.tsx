@@ -9,7 +9,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import type { useScan } from "@/hooks/use-scan";
 import { useReducedMotionSafe } from "@/hooks/use-reduced-motion";
 import type { AgentRun, ScanPhase, ScanProgress, ScanSourceProgress } from "@/lib/types";
-import { PLATFORM_LABELS, cn, titleCase } from "@/lib/utils";
+import { PLATFORM_LABELS, cn, plural, titleCase } from "@/lib/utils";
 
 type Scan = ReturnType<typeof useScan>;
 
@@ -49,12 +49,12 @@ function etaText(eta: number | null | undefined) {
 }
 
 /** The bar: springs to each new value, with a sheen running across it while the scan works. */
-export function ScanBar({ percent, active, className }: { percent: number; active: boolean; className?: string }) {
+export function ScanBar({ percent, active, className, label = "Scan progress" }: { percent: number; active: boolean; className?: string; label?: string }) {
   const reduce = useReducedMotionSafe();
   const value = Math.max(2, Math.min(100, percent));
   return (
     <div className={cn("relative h-2 w-full overflow-hidden rounded-full bg-primary/15", className)} role="progressbar"
-      aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(percent)} aria-label="Scan progress">
+      aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(percent)} aria-label={label}>
       <motion.div className="absolute inset-y-0 left-0 overflow-hidden rounded-full bg-primary"
         initial={false} animate={{ width: `${value}%` }}
         transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 90, damping: 22 }}>
@@ -64,6 +64,19 @@ export function ScanBar({ percent, active, className }: { percent: number; activ
       </motion.div>
     </div>
   );
+}
+
+/** "TinyFish: 6 searches · 14 pages read · 2 agent runs", or null when no source reported TinyFish usage. */
+export function tinyfishUsageLine(sources: ScanSourceProgress[] | undefined): string | null {
+  const used = (sources ?? []).filter((s) => s.usage);
+  if (!used.length) return null;
+  const sum = (key: "search_calls" | "fetch_urls" | "agent_runs") => used.reduce((n, s) => n + (s.usage?.[key] ?? 0), 0);
+  const parts = [
+    sum("search_calls") > 0 && plural(sum("search_calls"), "search", "searches"),
+    sum("fetch_urls") > 0 && `${plural(sum("fetch_urls"), "page")} read`,
+    sum("agent_runs") > 0 && plural(sum("agent_runs"), "agent run"),
+  ].filter(Boolean);
+  return parts.length ? `TinyFish: ${parts.join(" · ")}` : null;
 }
 
 function SourceChip({ source }: { source: ScanSourceProgress }) {
@@ -84,11 +97,18 @@ function SourceChip({ source }: { source: ScanSourceProgress }) {
     timeout: "Too slow, skipped",
   }[status];
   return (
-    <li title={source.error || undefined}
+    <li title={source.error || source.detail || undefined}
       className={cn("rounded-lg relative flex min-w-0 items-center gap-2 overflow-hidden border px-3 py-2 text-xs transition-colors",
         status === "running" ? "border-primary/60" : "border-line/70")}>
       {icon}
-      <span className="min-w-0 flex-1 truncate font-semibold">{label}</span>
+      {source.detail ? (
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-semibold">{label}</span>
+          <span className="block truncate text-[10px] text-muted-foreground">{source.detail}</span>
+        </span>
+      ) : (
+        <span className="min-w-0 flex-1 truncate font-semibold">{label}</span>
+      )}
       <span className={cn("shrink-0 tabular-nums", status === "done" ? "text-foreground" : "text-muted-foreground")}>{detail}</span>
       {status === "running" && source.total > 0 && (
         <span aria-hidden className="absolute inset-x-0 bottom-0 h-0.5 bg-primary/15">
@@ -117,6 +137,7 @@ function Running({ run, progress, scan }: { run: AgentRun; progress: ScanProgres
   const percent = progress?.percent ?? 1;
   const step = stepIndex(progress?.phase);
   const eta = etaText(progress?.eta_seconds);
+  const tinyfishLine = tinyfishUsageLine(progress?.sources);
   return (
     <>
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -153,6 +174,7 @@ function Running({ run, progress, scan }: { run: AgentRun; progress: ScanProgres
           {progress.sources.map((s) => <SourceChip key={s.name} source={s} />)}
         </ul>
       )}
+      {tinyfishLine && <p className="mt-3 text-xs text-muted-foreground">{tinyfishLine}</p>}
 
       <div className="mt-6 grid grid-cols-3 gap-4 border-t border-line/60 pt-5">
         <Counter label="Postings found" value={progress?.found ?? 0} />
@@ -167,6 +189,7 @@ function Finished({ run, onDismiss }: { run: AgentRun; onDismiss: () => void }) 
   const ok = run.status === "completed";
   const stopped = run.status === "cancelled";
   const took = run.duration_seconds != null ? clock(run.duration_seconds) : null;
+  const tinyfishLine = tinyfishUsageLine(run.progress?.sources);
   return (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
       <span className={cn("flex h-12 w-12 shrink-0 items-center justify-center",
@@ -181,6 +204,7 @@ function Finished({ run, onDismiss }: { run: AgentRun; onDismiss: () => void }) 
           {ok ? run.progress?.message || `${run.jobs_discovered} new jobs`
             : stopped ? "Jobs already scored are waiting in Swipe Review." : run.progress?.message || "See the activity log for details."}
         </p>
+        {tinyfishLine && <p className="mt-1 text-xs text-muted-foreground">{tinyfishLine}</p>}
         {!!run.errors_count && ok && (
           <p className="mt-1 text-xs text-muted-foreground">
             {run.errors_count} issue{run.errors_count === 1 ? "" : "s"} along the way — <Link href="/dashboard/logs" className="underline underline-offset-2 hover:text-primary">see the activity log</Link>.

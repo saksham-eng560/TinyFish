@@ -10,11 +10,23 @@ from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
 
+from app.config import settings
 from app.models.enums import ATSPlatform, JobType
 from app.scrapers.ats_detect import detect_ats_platform, parse_ats_url
-from app.scrapers.base import BaseScraper, ScrapedJob, ScraperError, SearchQuery, parse_date
+from app.scrapers.base import (
+    BaseScraper,
+    RateLimited,
+    ScrapedJob,
+    ScraperError,
+    SearchQuery,
+    looks_blocked,
+    parse_date,
+    wants_a_person,
+)
 
 logger = logging.getLogger(__name__)
+
+MAX_TINYFISH_READS = 20
 
 EMPLOYMENT = {"FULL_TIME": JobType.FULL_TIME, "PART_TIME": JobType.PART_TIME, "INTERN": JobType.INTERNSHIP,
               "CONTRACTOR": JobType.CONTRACT, "TEMPORARY": JobType.CONTRACT}
@@ -145,10 +157,38 @@ class GenericScraper(BaseScraper):
     platform = ATSPlatform.CUSTOM
     rate_key = "generic"
 
+    _tinyfish_reads = 0  # pages read through TinyFish by this scraper (a careers page with 15 dead links must not cost 15 credits)
+
+    def read_with_tinyfish(self, url: str) -> str | None:
+        """The page's HTML as TinyFish Fetch sees it, when TinyFish is on and the site isn't one of the consent-gated ones."""
+        from app.scrapers.tinyfish import TinyFishScraper
+        from app.scrapers.tinyfish_parse import is_gated_url
+
+        if not settings.tinyfish_enabled or is_gated_url(url) or self._tinyfish_reads >= MAX_TINYFISH_READS:
+            return None
+        self._tinyfish_reads += 1
+        return TinyFishScraper().read_html(url)
+
     def fetch_html(self, url: str) -> str:
-        resp = self.request("GET", url)
+        try:
+            resp = self.request("GET", url)
+        except RateLimited:
+            raise  # a 429 / captcha / cooldown: stop, never route around it
+        except ScraperError:
+            html = self.read_with_tinyfish(url)
+            if html is None:
+                raise
+            return html
         if resp.status_code >= 400:
-            raise ScraperError(f"HTTP {resp.status_code} for {url}")
+            html = None if wants_a_person(resp.text[:20000]) else self.read_with_tinyfish(url)
+            if html is None:
+                raise ScraperError(f"HTTP {resp.status_code} for {url}")
+            return html
+        if settings.tinyfish_enabled:
+            from app.scrapers.tinyfish_parse import looks_js_shell
+
+            if looks_blocked(resp.text) or looks_js_shell(resp.text):  # a challenge page or an empty JavaScript app shell
+                return self.read_with_tinyfish(url) or resp.text
         return resp.text
 
     def scrape_page(self, url: str, query: SearchQuery, depth: int = 0) -> list[ScrapedJob]:

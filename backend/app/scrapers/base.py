@@ -56,6 +56,14 @@ class SearchQuery:
     progress: Callable[[int, int], None] | None = field(default=None, repr=False, compare=False)
     # time.monotonic() after which a scraper should wrap up and return what it has so far.
     deadline: float | None = field(default=None, repr=False, compare=False)
+    # TinyFish finder / ranker inputs, all derived from the existing preferences (see from_preferences)
+    seniority: list[str] = field(default_factory=list)  # ExperienceLevel values: internship|entry|mid|senior|lead|executive
+    needs_sponsorship: bool = False  # the user needs visa sponsorship
+    skills: list[str] = field(default_factory=list)  # must-have keywords, e.g. ["python", "fastapi"]
+    companies: list[str] = field(default_factory=list)  # companies to look at specifically
+    agent_runs: int | None = None  # TinyFish Agent budget for this scan (None = preference / default)
+    # Called as detail(text, extra) with a short live status line ("Clicking Load more") and optional extras.
+    detail: Callable[[str | None, dict[str, Any]], None] | None = field(default=None, repr=False, compare=False)
 
     def time_up(self) -> bool:
         return self.deadline is not None and time.monotonic() > self.deadline
@@ -66,6 +74,13 @@ class SearchQuery:
                 self.progress(done, total)
             except Exception:  # progress reporting must never break a scan
                 logger.debug("progress callback failed", exc_info=True)
+
+    def note(self, text: str | None = None, **extra: Any) -> None:
+        if self.detail is not None:
+            try:
+                self.detail(text, extra)
+            except Exception:  # a status line must never break a scan
+                logger.debug("detail callback failed", exc_info=True)
 
     def is_known(self, url: str | None) -> bool:
         return bool(url) and url in self.known_urls
@@ -89,6 +104,11 @@ class SearchQuery:
             limit=limit,
             sources=prefs.get("sources") or {},
             focus=focus,
+            seniority=[str(v) for v in prefs.get("experience_level") or [] if v],
+            needs_sponsorship=bool(prefs.get("exclude_no_sponsorship")),
+            skills=[str(v) for v in prefs.get("focus_skills") or [] if v],
+            companies=[str(v) for v in prefs.get("companies_to_target") or [] if v],
+            agent_runs=prefs.get("tinyfish_agent_runs"),
         )
 
     def matches_title(self, title: str) -> bool:

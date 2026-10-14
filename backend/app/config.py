@@ -171,6 +171,20 @@ class Settings(BaseSettings):
     AUTO_STAGE_APPLICATIONS: bool = True  # fill forms automatically after preparation
     DATA_RETENTION_DAYS: int = 730
 
+    # ---- TinyFish (https://docs.tinyfish.ai): Search + Fetch + Agent for the "tinyfish" job source and the Finder ----
+    TINYFISH_API_KEY: str | None = None  # env-only; blank = TinyFish features off
+    TINYFISH_ENABLED: bool = True  # kill switch: false turns TinyFish off even with a key
+    TINYFISH_SEARCH_URL: str = "https://api.search.tinyfish.ai"
+    TINYFISH_FETCH_URL: str = "https://api.fetch.tinyfish.ai"
+    TINYFISH_AGENT_URL: str = "https://agent.tinyfish.ai"
+    TINYFISH_SEARCH_QUERIES_PER_SCAN: int = 8
+    TINYFISH_FETCH_URLS_PER_SCAN: int = 60
+    TINYFISH_AGENT_MAX_RUNS_PER_SCAN: int = 5  # hard ceiling; the user's preference (default 2) is clamped to it
+    TINYFISH_AGENT_CONCURRENCY: int = 2  # TinyFish's own cap is 2 concurrent runs
+    TINYFISH_AGENT_MAX_DURATION_SECONDS: int = 180
+    TINYFISH_FINDER_TIMEOUT_SECONDS: int = 300
+    RATE_LIMIT_TINYFISH: str = "6/minute;40/hour"  # per user, POST /tinyfish/search
+
     # ---- Notifications ----
     SMTP_HOST: str | None = None
     SMTP_PORT: int = 587
@@ -278,6 +292,15 @@ class Settings(BaseSettings):
     def ollama_cloud_model(self) -> bool:
         """A cloud model: on ollama.com, or a ``-cloud`` model through a signed-in local Ollama."""
         return self.ollama_is_cloud or self.ollama_model.endswith(("-cloud", ":cloud"))
+
+    @property
+    def tinyfish_enabled(self) -> bool:
+        return bool((self.TINYFISH_API_KEY or "").strip()) and self.TINYFISH_ENABLED
+
+    @property
+    def tinyfish_agent_allowed(self) -> bool:
+        """The Agent spends credits on real browser runs: never in the public demo."""
+        return self.tinyfish_enabled and not self.DEMO_MODE
 
     @property
     def is_sqlite(self) -> bool:

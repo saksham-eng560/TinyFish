@@ -79,6 +79,10 @@ export interface Preferences {
   cover_letter_enabled: boolean;
   resume_template?: string;
   auto_draft_replies?: boolean;
+  /** Let scans use TinyFish Search / Fetch / Agent (only has an effect when the server has a key). */
+  tinyfish_enabled?: boolean;
+  /** TinyFish Agent runs a scan may spend (0-5; scheduled scans use at most 1). */
+  tinyfish_agent_runs?: number;
 }
 
 export interface LocationFocus {
@@ -474,6 +478,11 @@ export interface ScanSourceProgress {
   done: number;
   total: number;
   error?: string;
+  /** One-line "what it's doing right now" (e.g. the TinyFish Agent's current step). */
+  detail?: string;
+  /** TinyFish endpoint usage of this source's scan. */
+  usage?: TinyFishUsage;
+  streaming_url?: string;
 }
 
 /** Live progress of a scan (agent_runs.progress), pushed over the WebSocket as `scan_progress`. */
@@ -582,6 +591,7 @@ export interface Integrations {
     embedding_provider: string;
     ollama: OllamaStatus;
   };
+  tinyfish: TinyFishIntegration;
   automation: { proxies: number; captcha: boolean; dry_run: boolean; auto_stage: boolean };
   notifications: { smtp: boolean; discord: boolean; slack: boolean };
   ats_credentials: string[];
@@ -643,4 +653,134 @@ export interface Paginated<T> {
   page_size?: number;
   counts?: Record<string, number>;
   self_applied_total?: number;
+}
+
+// ---- TinyFish (Search + Fetch + Agent) ----
+
+export interface TinyFishUsage {
+  search_calls: number;
+  fetch_calls: number;
+  fetch_urls: number;
+  agent_runs: number;
+  agent_steps: number;
+  errors: number;
+}
+
+/** GET /users/me/integrations -> tinyfish. The API key is never part of it. */
+export interface TinyFishIntegration {
+  configured: boolean;
+  enabled: boolean;
+  agent_available: boolean;
+  agent_runs_per_scan: number;
+  agent_runs_max: number;
+  usage_today: Partial<TinyFishUsage>;
+}
+
+export interface TinyFishTestResult {
+  ok: boolean;
+  latency_ms?: number;
+  results?: number;
+  error?: string | null;
+  hint?: string | null;
+}
+
+export interface TinyFishStatus {
+  configured: boolean;
+  enabled: boolean;
+  agent_enabled: boolean;
+  agent_runs_max: number;
+  demo_mode: boolean;
+  endpoints: string[];
+  hint: string | null;
+  usage_today: Partial<TinyFishUsage>;
+}
+
+/** POST /tinyfish/search body. */
+export interface FinderRequest {
+  roles: string[];
+  locations: string[];
+  keywords: string[];
+  seniority: string[];
+  visa_sponsorship: boolean;
+  remote: boolean;
+  companies: string[];
+  career_pages: string[];
+  posted_within_days: number;
+  limit: number;
+  min_score: number;
+  use_agent: boolean;
+  agent_runs: number;
+}
+
+export interface FinderReason {
+  factor: string;
+  points: number;
+  max: number;
+  note: string;
+}
+
+export interface FinderListing {
+  id: string;
+  title: string;
+  company: string;
+  location: string | null;
+  remote: boolean;
+  job_type: string | null;
+  seniority: string | null;
+  posted_date: string | null;
+  salary: { min: number | null; max: number | null; currency: string | null };
+  apply_url: string;
+  source_url: string;
+  source_host: string;
+  ats: string;
+  discovered_by: string[];
+  snippet: string;
+  visa: { status: "sponsors" | "no_sponsorship" | "unknown"; evidence: string | null };
+  score: number;
+  reasons: FinderReason[];
+  saved: boolean;
+  application_id: string | null;
+}
+
+export interface FinderAgentRun {
+  url: string;
+  status: string;
+  steps: number;
+  found: number;
+  streaming_url: string | null;
+  error: string | null;
+}
+
+export type FinderStageStatus = "pending" | "running" | "done" | "failed" | "skipped";
+
+export interface FinderState {
+  search_id: string;
+  status: "running" | "completed" | "failed" | "cancelled";
+  phase: string;
+  percent: number;
+  message: string;
+  started_at: string;
+  completed_at: string | null;
+  duration_seconds: number | null;
+  request: FinderRequest;
+  usage: TinyFishUsage;
+  endpoints_used: string[];
+  agent: { active: boolean; purpose: string | null; streaming_url: string | null; runs: FinderAgentRun[] };
+  stages: { name: string; status: FinderStageStatus; detail: string | null }[];
+  counts: Record<string, number>;
+  notes: string[];
+  /** Only present once the search has completed. */
+  results?: FinderListing[];
+  error: string | null;
+}
+
+/** An entry of GET /agent/runs?run_type=tinyfish_search (progress is the state without results). */
+export type FinderRunItem = Omit<AgentRun, "progress"> & { progress?: Partial<FinderState> | null };
+
+export interface FinderSaveResponse {
+  saved: number;
+  already_in_deck: number;
+  skipped: number;
+  items: { listing_id: string; job_id: string; application_id: string; created: boolean }[];
+  review_url: string;
 }

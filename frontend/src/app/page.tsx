@@ -97,6 +97,7 @@ export default function Landing() {
             <p className="label-caps mb-8 flex items-center gap-2 text-muted-foreground">
               <span className="h-2 w-2 animate-pulse-dot rounded-full bg-primary motion-reduce:animate-none" /> Open source · self-hostable
             </p>
+            <p className="label-caps mb-8 -mt-4 text-primary">Powered by TinyFish Search, Fetch and Agent</p>
             <BrushHeadline lines={["Swipe right.", "We apply.", "Internships", "on autopilot"]} />
             <p className="mt-8 max-w-xl text-lg leading-relaxed text-foreground/80">
               HireFlow finds internships, lets you keep or skip each one with a swipe, then tailors your resume, fills the

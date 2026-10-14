@@ -1,0 +1,21 @@
+{
+  "run_id": "run_123",
+  "status": "COMPLETED",
+  "goal": "List the open roles",
+  "created_at": "2026-10-14T10:00:00Z",
+  "started_at": "2026-10-14T10:00:01Z",
+  "finished_at": "2026-10-14T10:00:40Z",
+  "num_of_steps": 6,
+  "streaming_url": "https://stream.tinyfish.example/run_123",
+  "result": {
+    "company": "Acme",
+    "jobs": [
+      {
+        "title": "Backend Engineer",
+        "apply_url": "https://acme.example/careers/backend-engineer-1",
+        "visa_sponsorship": "unknown"
+      }
+    ]
+  },
+  "error": null
+}
