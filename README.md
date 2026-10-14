@@ -30,10 +30,28 @@ needed to try it. Keep the ones you like and HireFlow adds them to your **Swipe 
 Everything runs on your computer. Your preferences and data stay in your own database, and TinyFish is only called
 with the search terms and the public careers pages it has to read.
 
-<p align="center"><img src="docs/screenshots/landing.png" alt="HireFlow's landing page (the screenshot shows the earlier blue theme)" width="900" /></p>
+<p align="center"><img src="submission-screenshots/01-landing.png" alt="HireFlow landing page in the orange and black theme, powered by TinyFish Search, Fetch and Agent" width="900" /></p>
 
-> **Screenshots:** the images in this README show the earlier blue theme. The app is now orange and black. Layout and
-> features are unchanged.
+### Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="submission-screenshots/02-tinyfish-finder.png" alt="TinyFish Finder: roles, locations, keywords, companies, seniority and career pages" /><br /><sub><b>TinyFish Finder.</b> Set roles, locations, keywords, seniority and visa needs. No resume needed.</sub></td>
+    <td width="50%"><img src="submission-screenshots/04-swipe-review-dark.png" alt="Swipe Review in the dark theme: a job card with its match score and skills" /><br /><sub><b>Swipe Review.</b> Every match, best first, with a 0 to 100 score and the reasons.</sub></td>
+  </tr>
+  <tr>
+    <td><img src="submission-screenshots/05-settings-integrations.png" alt="Settings with the TinyFish integration card" /><br /><sub><b>Settings.</b> TinyFish status, a Test connection button and the Agent budget per scan.</sub></td>
+    <td><img src="submission-screenshots/03-overview-dark.png" alt="Overview dashboard in the dark theme" /><br /><sub><b>Overview.</b> What's waiting for you, what was sent and how employers are answering.</sub></td>
+  </tr>
+  <tr>
+    <td><img src="submission-screenshots/06-analytics.png" alt="Analytics charts in the orange and black palette" /><br /><sub><b>Analytics.</b> Response, interview and offer rates.</sub></td>
+    <td><img src="submission-screenshots/02-tinyfish-finder-dark.png" alt="TinyFish Finder in the dark theme" /><br /><sub><b>Dark theme.</b> Near-black surfaces with TinyFish orange accents.</sub></td>
+  </tr>
+</table>
+
+> The Finder screenshots were taken before an API key was added, so they show the form and the "add
+> TINYFISH_API_KEY" banner rather than live results. The Overview, Swipe Review and Analytics cards use the built-in
+> sample account (`make seed`).
 
 ## How TinyFish is used
 
